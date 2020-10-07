@@ -1,0 +1,61 @@
+{
+  "name": "posthog-cli",
+  "version": "0.0.1",
+  "description": "PostHog CLI",
+  "scripts": {
+    "start": "ts-node ./src/posthog",
+    "start-dist": "node ./dist/posthog",
+    "build": "tsc -p .",
+    "prepublish": "npm run test && npm run build",
+    "test": "jest"
+  },
+  "author": "Marius Andra <marius.andra@gmail.com>",
+  "license": "MIT",
+  "main": "dist/posthog.js",
+  "bin": {
+    "posthog": "./dist/posthog.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "prettier": "^2.0.5",
+    "yargs": "^15.4.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/jest": "^26.0.3",
+    "@types/node": "^14.0.19",
+    "@types/yargs": "^15.0.5",
+    "babel-jest": "^26.1.0",
+    "husky": ">=4",
+    "jest": "^26.1.0",
+    "lint-staged": ">=10",
+    "ts-jest": "^26.1.1",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.6"
+  },
+  "peerDependencies": {
+    "typescript": "*"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/dist",
+      "<rootDir>/node_modules",
+      "<rootDir>/.yalc",
+      "<rootDir>/samples/.yalc"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,css,scss}": "prettier --write"
+  }
+}
