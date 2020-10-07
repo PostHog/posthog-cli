@@ -3,3 +3,4 @@ node_modules
 dist/
 .yalc
 yarn-error.log
+posthog.json
