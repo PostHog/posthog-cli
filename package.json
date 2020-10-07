@@ -6,7 +6,7 @@
     "start": "ts-node ./src/posthog",
     "start-dist": "node ./dist/posthog",
     "build": "tsc -p .",
-    "prepublish": "npm run test && npm run build",
+    "prepublish": "npm run build",
     "test": "jest"
   },
   "author": "Marius Andra <marius.andra@gmail.com>",
