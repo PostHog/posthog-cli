@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { PosthogConfig } from '../../types'
 
-exports.command = 'list'
+exports.command = ['list', 'l']
 exports.desc = 'List installed plugins'
 exports.builder = {}
 exports.handler = function (argv) {

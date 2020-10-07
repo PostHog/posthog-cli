@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { PosthogConfig } from '../../types'
 
-exports.command = 'uninstall <repository>'
+exports.command = ['uninstall <repository>', 'u <repository>']
 exports.desc = 'Uninstall plugin'
 exports.builder = {}
 exports.handler = function (argv) {

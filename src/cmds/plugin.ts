@@ -1,4 +1,4 @@
-exports.command = 'plugin <command>'
+exports.command = ['plugin <command>', 'p <command>']
 exports.desc = 'Manage plugins'
 exports.builder = function (yargs) {
     return yargs

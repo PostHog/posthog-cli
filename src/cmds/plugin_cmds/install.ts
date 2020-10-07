@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { PosthogConfig } from '../../types'
 
-exports.command = 'install <repository>'
+exports.command = ['install <repository>', 'i <repository>']
 exports.desc = 'Add plugin from git repository'
 exports.builder = {}
 exports.handler = function (argv) {
