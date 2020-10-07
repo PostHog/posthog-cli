@@ -16,7 +16,7 @@ Run ```posthog plugin install <repository>```, where ```<repository>``` is the U
 
 #### Removing a plugin
 
-Run ```posthog plugin uninstall <name>```, where ```<repository>``` is the URL to the plugin's git repo.
+Run ```posthog plugin uninstall <repository>```, where ```<repository>``` is the URL to the plugin's git repo.
 
 #### Viewing installed plugins
 
