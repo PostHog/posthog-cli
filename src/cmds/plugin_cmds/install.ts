@@ -8,13 +8,14 @@ exports.handler = function (argv) {
     const configPath = argv.config
     const repository = argv.repository as string
 
-    if (!repository.startsWith('http://') && !repository.startsWith('https://')) {
-        console.error(`Repository must start with "http://" or "https://". Received: "${repository}"`)
+    if (!repository.startsWith('http://') && !repository.startsWith('https://') && !fs.existsSync(repository)) {
+        console.error('Repository must start with "http://" or "https://" or be a local path.')
+        console.error(`Received: "${repository}". Exiting!`)
         process.exit(1)
     }
 
     let newFile = true
-    let config = {} as PosthogConfig
+    let config: PosthogConfig = {}
 
     if (fs.existsSync(configPath)) {
         try {
@@ -22,7 +23,7 @@ exports.handler = function (argv) {
             config = JSON.parse(jsonBuffer.toString())
             newFile = false
         } catch (e) {
-            console.error(`Could not load posthog config at "${configPath}"`)
+            console.error(`Could not load PostHog config at "${configPath}"`)
             process.exit(1)
         }
     }
