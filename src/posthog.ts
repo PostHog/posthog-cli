@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 require('yargs')
-    .command(require('./cmds/plugin.ts'))
+    .command(require('./cmds/plugin'))
     .demandCommand()
     .option('config', { alias: 'c', describe: 'Path to posthog.json', type: 'string', default: './posthog.json' })
     .help().argv

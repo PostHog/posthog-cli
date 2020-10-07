@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import { PosthogConfig } from '../../types'
 
 exports.command = 'list'
-exports.desc = 'List installed plugins and their versions'
+exports.desc = 'List installed plugins'
 exports.builder = {}
 exports.handler = function (argv) {
     const configPath = argv.config
