@@ -27,8 +27,9 @@ exports.handler = function (argv) {
         console.log('No plugins installed!')
     } else {
         console.log(`${plugins.length} plugin${plugins.length === 1 ? '' : 's'} installed:`)
-        for (const respository of plugins) {
-            console.log(`- ${respository}`)
+        const digits = (plugins.length + 1).toString().length
+        for (let i = 0; i < plugins.length; i++) {
+            console.log(`${(i + 1).toString().padStart(digits)}. ${plugins[i]}`)
         }
     }
 }
