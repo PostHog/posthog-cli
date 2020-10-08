@@ -1,19 +1,27 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { PosthogConfig } from '../../types'
+import { fetchRepositoryPlugins } from '../../utils'
 
 exports.command = ['install <repository>', 'i <repository>']
 exports.desc = 'Add plugin from git repository'
 exports.builder = {}
-exports.handler = function (argv) {
+exports.handler = async function (argv) {
     const configPath = argv.config
-    const repository = argv.repository as string
+    let repository = argv.repository as string
     const urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
 
     if (!urlRepo && !fs.existsSync(repository)) {
-        console.error('Repository must start with "http://" or "https://" or be a local path.')
-        console.error(`Received: "${repository}". Exiting!`)
-        process.exit(1)
+        const plugins = await fetchRepositoryPlugins()
+        const plugin = plugins.find(p => p.name === repository)
+
+        if (!plugin) {
+            console.error('Repository must start with "http://" or "https://", be a local path or a name in the repository.')
+            console.error(`Received: "${repository}". Exiting!`)
+            process.exit(1)
+        }
+
+        repository = plugin.url
     }
 
     let newFile = true
