@@ -24,18 +24,26 @@ exports.handler = function (argv) {
         config.plugins = []
     }
 
-    if (!config.plugins.includes(repository)) {
-        console.error(`Plugin "${repository}" not installed! Exiting!`)
+    const newPlugins = config.plugins.filter(r => {
+        if (typeof r === 'string') {
+            return r !== repository
+        } else {
+            return r.name !== repository && r.url !== repository && r.path !== repository
+        }
+    })
+
+    if (newPlugins.length === config.plugins.length) {
+        console.error(`Plugin is "${repository}" not installed! Exiting!`)
         process.exit(1)
     }
 
-    config.plugins = config.plugins.filter(r => r !== repository)
+    config.plugins = newPlugins
 
     const configString = JSON.stringify(config, null, 2)
 
     try {
         fs.writeFileSync(configPath, configString)
-        console.log('Plugin uninstalled successfully')
+        console.log(`Plugin "${repository}" uninstalled successfully!`)
     } catch (e) {
         console.error(`Error writing to file "${configPath}"! Exiting!`)
         process.exit(1)

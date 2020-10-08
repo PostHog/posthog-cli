@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import { PosthogConfig } from '../../types'
 
 exports.command = ['install <repository>', 'i <repository>']
@@ -32,12 +33,26 @@ exports.handler = function (argv) {
         config.plugins = []
     }
 
-    if (config.plugins.includes(repository)) {
+    const pluginPathsUrls = config.plugins.map(plugin => {
+        if (typeof plugin === 'string') {
+            return plugin
+        } else {
+            return plugin.path || plugin.url
+        }
+    }).filter(p => p)
+
+    if (pluginPathsUrls.includes(repository)) {
         console.error(`Plugin "${repository}" already installed! Exiting!`)
         process.exit(1)
     }
 
-    config.plugins.push(repository)
+    if (repository.startsWith('http://') || repository.startsWith('https://')) {
+        const name = repository.split('/').filter(p => p).pop()
+        config.plugins.push({ name, url: repository })
+    } else {
+        const name = repository.split(path.delimiter).filter(p => p).pop()
+        config.plugins.push({ name, path: repository })
+    }
 
     const configString = JSON.stringify(config, null, 2)
 
