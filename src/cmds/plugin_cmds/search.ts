@@ -1,7 +1,7 @@
 import * as fs from 'fs'
-import * as fetch from 'node-fetch'
 import * as chalk from 'chalk'
 import { PosthogConfig } from '../../types'
+import { fetchRepositoryPlugins } from '../../utils'
 
 exports.command = ['search [term]', 's [term]']
 exports.desc = 'Search the plugin repository'
@@ -9,7 +9,6 @@ exports.builder = {}
 exports.handler = async function (argv) {
     const configPath = argv.config
     const search = (argv.term || '') as string
-    const repoUrl = 'https://raw.githubusercontent.com/PostHog/plugins/main/plugins.json'
 
     let newFile = true
     let config = {} as PosthogConfig
@@ -25,15 +24,7 @@ exports.handler = async function (argv) {
         }
     }
 
-    let plugins = []
-
-    try {
-        const response = await fetch(repoUrl)
-        plugins = await response.json()
-    } catch {
-        console.error(`Error fetching repositories from: "${configPath}"`)
-        process.exit(1)
-    }
+    const plugins = await fetchRepositoryPlugins()
 
     const lowerSearch = search.toLowerCase()
     const matchingPlugins = plugins.filter(
