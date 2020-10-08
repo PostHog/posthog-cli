@@ -50,7 +50,7 @@ exports.handler = function (argv) {
         const name = repository.split('/').filter(p => p).pop()
         config.plugins.push({ name, url: repository })
     } else {
-        const name = repository.split(path.delimiter).filter(p => p).pop()
+        const name = repository.split(path.sep).filter(p => p).pop()
         config.plugins.push({ name, path: repository })
     }
 
