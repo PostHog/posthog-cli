@@ -8,20 +8,34 @@ exports.desc = 'Add plugin from git repository'
 exports.builder = {}
 exports.handler = async function (argv) {
     const configPath = argv.config
+
+    let name = ''
     let repository = argv.repository as string
-    const urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
+
+    let urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
 
     if (!urlRepo && !fs.existsSync(repository)) {
         const plugins = await fetchRepositoryPlugins()
-        const plugin = plugins.find(p => p.name === repository)
+        const plugin = plugins.find((p) => p.name === repository)
 
         if (!plugin) {
-            console.error('Repository must start with "http://" or "https://", be a local path or a name in the repository.')
+            console.error(
+                'Repository must start with "http://" or "https://", be a local path or a name in the repository.',
+            )
             console.error(`Received: "${repository}". Exiting!`)
             process.exit(1)
         }
 
+        name = repository
         repository = plugin.url
+        urlRepo = true
+    }
+
+    if (!name) {
+        name = repository
+            .split(urlRepo ? '/' : path.sep)
+            .filter((p) => p)
+            .pop()
     }
 
     let newFile = true
@@ -44,11 +58,6 @@ exports.handler = async function (argv) {
 
     const pluginPathsUrls = config.plugins.map((plugin) => plugin.path || plugin.url).filter((p) => p)
     const pluginNames = config.plugins.map((plugin) => plugin.name).filter((p) => p)
-
-    const name = repository
-        .split(urlRepo ? '/' : path.sep)
-        .filter((p) => p)
-        .pop()
 
     if (pluginNames.includes(name)) {
         console.error(`Plugin "${name}" already installed! Exiting!`)
