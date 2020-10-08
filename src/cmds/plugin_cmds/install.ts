@@ -70,9 +70,9 @@ exports.handler = async function (argv) {
     }
 
     if (urlRepo) {
-        config.plugins.push({ name, url: repository })
+        config.plugins.push({ name, url: repository, config: {} })
     } else {
-        config.plugins.push({ name, path: repository })
+        config.plugins.push({ name, path: repository, config: {} })
     }
 
     const configString = JSON.stringify(config, null, 2)
