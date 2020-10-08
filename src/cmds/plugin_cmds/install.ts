@@ -8,8 +8,9 @@ exports.builder = {}
 exports.handler = function (argv) {
     const configPath = argv.config
     const repository = argv.repository as string
+    const urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
 
-    if (!repository.startsWith('http://') && !repository.startsWith('https://') && !fs.existsSync(repository)) {
+    if (!urlRepo && !fs.existsSync(repository)) {
         console.error('Repository must start with "http://" or "https://" or be a local path.')
         console.error(`Received: "${repository}". Exiting!`)
         process.exit(1)
@@ -33,24 +34,27 @@ exports.handler = function (argv) {
         config.plugins = []
     }
 
-    const pluginPathsUrls = config.plugins.map(plugin => {
-        if (typeof plugin === 'string') {
-            return plugin
-        } else {
-            return plugin.path || plugin.url
-        }
-    }).filter(p => p)
+    const pluginPathsUrls = config.plugins.map((plugin) => plugin.path || plugin.url).filter((p) => p)
+    const pluginNames = config.plugins.map((plugin) => plugin.name).filter((p) => p)
+
+    const name = repository
+        .split(urlRepo ? '/' : path.sep)
+        .filter((p) => p)
+        .pop()
+
+    if (pluginNames.includes(name)) {
+        console.error(`Plugin "${name}" already installed! Exiting!`)
+        process.exit(1)
+    }
 
     if (pluginPathsUrls.includes(repository)) {
         console.error(`Plugin "${repository}" already installed! Exiting!`)
         process.exit(1)
     }
 
-    if (repository.startsWith('http://') || repository.startsWith('https://')) {
-        const name = repository.split('/').filter(p => p).pop()
+    if (urlRepo) {
         config.plugins.push({ name, url: repository })
     } else {
-        const name = repository.split(path.sep).filter(p => p).pop()
         config.plugins.push({ name, path: repository })
     }
 

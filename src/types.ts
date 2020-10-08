@@ -6,5 +6,5 @@ export interface Plugin {
 }
 
 export interface PosthogConfig {
-    plugins?: (string | Plugin)[]
+    plugins?: Plugin[]
 }

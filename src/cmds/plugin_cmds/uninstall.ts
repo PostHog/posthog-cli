@@ -25,11 +25,7 @@ exports.handler = function (argv) {
     }
 
     const newPlugins = config.plugins.filter(r => {
-        if (typeof r === 'string') {
-            return r !== repository
-        } else {
-            return r.name !== repository && r.url !== repository && r.path !== repository
-        }
+        return r.name !== repository && r.url !== repository && r.path !== repository
     })
 
     if (newPlugins.length === config.plugins.length) {

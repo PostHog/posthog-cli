@@ -30,11 +30,7 @@ exports.handler = function (argv) {
         const digits = (plugins.length + 1).toString().length
         for (let i = 0; i < plugins.length; i++) {
             const plugin = plugins[i]
-            if (typeof plugin === 'string') {
-                console.log(`${(i + 1).toString().padStart(digits)}. ${plugin}`)
-            } else {
-                console.log(`${(i + 1).toString().padStart(digits)}. ${plugin.path || plugin.url}`)
-            }
+            console.log(`${(i + 1).toString().padStart(digits)}. ${plugin.path || plugin.url}`)
         }
     }
 }
