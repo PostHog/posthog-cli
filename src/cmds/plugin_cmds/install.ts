@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { PosthogConfig } from '../../types'
+import { PluginRepositoryEntry, PosthogConfig } from '../../types'
 import { fetchRepositoryPlugins } from '../../utils'
 
 exports.command = ['install <repository>', 'i <repository>']
@@ -11,11 +11,12 @@ exports.handler = async function (argv) {
 
     let name = ''
     let repository = argv.repository as string
+    let pluginConfig = {}
 
     let urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
 
     if (!urlRepo && !fs.existsSync(repository)) {
-        const plugins = await fetchRepositoryPlugins()
+        const plugins: PluginRepositoryEntry[] = await fetchRepositoryPlugins()
         const plugin = plugins.find((p) => p.name === repository)
 
         if (!plugin) {
@@ -29,6 +30,9 @@ exports.handler = async function (argv) {
         name = repository
         repository = plugin.url
         urlRepo = true
+        Object.entries(plugin.config).forEach(([key, obj]) => {
+            pluginConfig[key] = typeof obj.default === 'undefined' ? '' : obj.default
+        })
     }
 
     if (!name) {
@@ -70,9 +74,9 @@ exports.handler = async function (argv) {
     }
 
     if (urlRepo) {
-        config.plugins.push({ name, url: repository, config: {} })
+        config.plugins.push({ name, url: repository, config: pluginConfig })
     } else {
-        config.plugins.push({ name, path: repository, config: {} })
+        config.plugins.push({ name, path: repository, config: pluginConfig })
     }
 
     const configString = JSON.stringify(config, null, 2)
