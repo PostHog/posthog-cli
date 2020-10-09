@@ -29,9 +29,7 @@ exports.handler = async function (argv) {
     console.log(`Cloning repository ${repository} into ${name}`)
     await execShellCommand(`git clone ${repository} ${name}`)
     console.log('Removing the origin remote')
-    await execShellCommand(`cd ${name}`)
-    await execShellCommand(`git remote remove origin`)
-    await execShellCommand(`cd ..`)
+    await execShellCommand(`cd ${name} && git remote remove origin`)
     console.log('All done! Happy Hacking! :-)')
     console.log('')
 }
