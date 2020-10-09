@@ -1,5 +1,6 @@
 import * as fetch from 'node-fetch'
 import { PluginRepositoryEntry } from './types'
+import { exec } from "child_process"
 
 export async function fetchRepositoryPlugins(): Promise<PluginRepositoryEntry[]> {
     const repoUrl = 'https://raw.githubusercontent.com/PostHog/plugins/main/plugins.json'
@@ -14,4 +15,16 @@ export async function fetchRepositoryPlugins(): Promise<PluginRepositoryEntry[]>
     }
 
     return plugins
+}
+
+export function execShellCommand(cmd: string) {
+    return new Promise((resolve, reject) => {
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                reject(error)
+            } else {
+                resolve(stdout ? stdout : stderr)
+            }
+        })
+    })
 }

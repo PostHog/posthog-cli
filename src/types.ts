@@ -9,7 +9,7 @@ export interface PosthogConfig {
     plugins?: Plugin[]
 }
 
-export interface PluginRepositoryEntryConfig {
+export interface PluginConfig {
     name: string
     type: string
     default: any
@@ -19,5 +19,5 @@ export interface PluginRepositoryEntry {
     name: string
     url: string
     description: string
-    config?: Record<string, PluginRepositoryEntryConfig>
+    config?: Record<string, PluginConfig>
 }
