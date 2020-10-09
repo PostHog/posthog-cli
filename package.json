@@ -1,6 +1,6 @@
 {
   "name": "posthog-cli",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "PostHog CLI",
   "scripts": {
     "start": "ts-node ./src/posthog",
