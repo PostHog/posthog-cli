@@ -1,17 +1,18 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import * as fetch from 'node-fetch'
 import { PluginRepositoryEntry, PosthogConfig } from '../../types'
 import { fetchRepositoryPlugins } from '../../utils'
 
-exports.command = ['install <repository>', 'i <repository>']
-exports.desc = 'Add plugin from git repository'
+exports.command = ['add <repository>', 'a <repository>']
+exports.desc = 'Add a plugin to posthog.json'
 exports.builder = {}
 exports.handler = async function (argv) {
     const configPath = argv.config
 
     let name = ''
     let repository = argv.repository as string
-    let pluginConfig = {}
+    let tag: string | null = argv.tag || null
 
     let urlRepo = repository.startsWith('http://') || repository.startsWith('https://')
 
@@ -30,9 +31,43 @@ exports.handler = async function (argv) {
         name = repository
         repository = plugin.url
         urlRepo = true
-        Object.entries(plugin.config).forEach(([key, obj]) => {
-            pluginConfig[key] = typeof obj.default === 'undefined' ? '' : obj.default
-        })
+    }
+
+    if (urlRepo) {
+        const match = repository.match(/https?:\/\/(www\.|)github.com\/([^\/]+)\/([^\/]+)\/?$/)
+        if (!match) {
+            console.error('Repository must be in the format: https://github.com/user/repo')
+            console.error(`Received: "${repository}". Exiting!`)
+            process.exit(1)
+        }
+        const [, , user, repo] = match
+
+        if (!tag) {
+            const repoCommitsUrl = `https://api.github.com/repos/${user}/${repo}/commits`
+            const repoCommits: Record<string, any>[] | null = await fetch(repoCommitsUrl)
+                .then((response) => response?.json())
+                .catch(() => null)
+
+            if (!repoCommits || repoCommits.length === 0) {
+                console.error(`Could not find repository: ${repository}`)
+                process.exit(1)
+            }
+
+            tag = repoCommits[0].sha
+        }
+
+        const jsonUrl = `https://raw.githubusercontent.com/${user}/${repo}/${tag}/plugin.json`
+        const json: PluginRepositoryEntry | null = await fetch(jsonUrl)
+            .then((response) => response?.json())
+            .catch(() => null)
+
+        if (!json) {
+            console.error(`Could not find plugin.json in repository: ${repository}`)
+            if (argv.tag) {
+                console.error(`Looked for a tag/commit: ${argv.tag}`)
+            }
+            process.exit(1)
+        }
     }
 
     if (!name) {
@@ -74,9 +109,9 @@ exports.handler = async function (argv) {
     }
 
     if (urlRepo) {
-        config.plugins.push({ name, url: repository, config: pluginConfig })
+        config.plugins.push({ name, url: repository, tag })
     } else {
-        config.plugins.push({ name, path: repository, config: pluginConfig })
+        config.plugins.push({ name, path: repository })
     }
 
     const configString = JSON.stringify(config, null, 2)
@@ -89,6 +124,9 @@ exports.handler = async function (argv) {
         }
 
         console.log('Plugin installed successfully')
+        if (tag) {
+            console.log(`Tag: ${tag}`)
+        }
     } catch (e) {
         console.error(`Error writing to file "${configPath}"! Exiting!`)
         process.exit(1)

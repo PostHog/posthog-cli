@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import { execShellCommand } from '../../utils'
 
 exports.command = ['new <name>', 'n <name>']
-exports.desc = 'Bootstrap a new plugin project/folder'
+exports.desc = 'Bootstrap new plugin project'
 exports.builder = {}
 exports.handler = async function (argv) {
     const name = (argv.name || '') as string
