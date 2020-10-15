@@ -30,6 +30,19 @@ exports.handler = async function (argv) {
     await execShellCommand(`git clone ${repository} ${name}`)
     console.log('Removing the origin remote')
     await execShellCommand(`cd ${name} && git remote remove origin`)
+
+    try {
+        const jsonBuffer = fs.readFileSync(`${name}/plugin.json`)
+        const config = JSON.parse(jsonBuffer.toString())
+        config.name = name
+        const configString = JSON.stringify(config, null, 2)
+        fs.writeFileSync(`${name}/plugin.json`, configString)
+    } catch (e) {
+        console.error(`Could not update plugin config at "${name}/plugin.json"`)
+        process.exit(1)
+    }
+
+
     console.log('All done! Happy Hacking! :-)')
     console.log('')
 }
