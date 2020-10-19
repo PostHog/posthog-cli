@@ -3,7 +3,7 @@ import { PluginRepositoryEntry } from './types'
 import { exec } from "child_process"
 
 export async function fetchRepositoryPlugins(): Promise<PluginRepositoryEntry[]> {
-    const repoUrl = 'https://raw.githubusercontent.com/PostHog/plugins/main/plugins.json'
+    const repoUrl = 'https://raw.githubusercontent.com/PostHog/plugins/main/repository.json'
     let plugins: PluginRepositoryEntry[] = []
 
     try {
