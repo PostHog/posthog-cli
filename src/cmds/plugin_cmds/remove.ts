@@ -40,6 +40,7 @@ exports.handler = function (argv) {
     try {
         fs.writeFileSync(configPath, configString)
         console.log(`Plugin "${repository}" uninstalled successfully!`)
+        console.log('You must restart your server for the changes to take effect!')
     } catch (e) {
         console.error(`Error writing to file "${configPath}"! Exiting!`)
         process.exit(1)

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as fetch from 'node-fetch'
-import { PluginRepositoryEntry, PosthogConfig } from '../../types'
+import { PluginRepositoryEntry, PosthogConfig, Plugin } from '../../types'
 import { fetchRepositoryPlugins } from '../../utils'
 
 exports.command = ['add <repository>', 'a <repository>']
@@ -32,6 +32,8 @@ exports.handler = async function (argv) {
         repository = plugin.url
         urlRepo = true
     }
+
+    let defaultConfig = {}
 
     if (urlRepo) {
         const match = repository.match(/https?:\/\/(www\.|)github.com\/([^\/]+)\/([^\/]+)\/?$/)
@@ -67,6 +69,12 @@ exports.handler = async function (argv) {
                 console.error(`Looked for a tag/commit: ${argv.tag}`)
             }
             process.exit(1)
+        }
+
+        if (json.config) {
+            Object.entries(json.config).forEach(([key, { default: defaultValue }]) => {
+                defaultConfig[key] = defaultValue
+            })
         }
     }
 
@@ -108,11 +116,13 @@ exports.handler = async function (argv) {
         process.exit(1)
     }
 
+    let pluginConfig: Plugin = { name }
     if (urlRepo) {
-        config.plugins.push({ name, url: repository, tag })
+        pluginConfig = { name, url: repository, tag }
     } else {
-        config.plugins.push({ name, path: repository })
+        pluginConfig = { name, path: repository }
     }
+    config.plugins.push(pluginConfig)
 
     const configString = JSON.stringify(config, null, 2)
 
@@ -123,10 +133,13 @@ exports.handler = async function (argv) {
             console.log(`Creating new config at "${configPath}"`)
         }
 
-        console.log('Plugin installed successfully')
+        console.log('Plugin installed successfully.')
         if (tag) {
             console.log(`Tag: ${tag}`)
         }
+        console.log('You must restart your server for the changes to take effect!')
+        console.log('To enable the plugin globally for all teams, edit posthog.json and add the following "global" key:')
+        console.log(JSON.stringify({ ...pluginConfig, global: { enabled: true, config: defaultConfig }  }, null, 2))
     } catch (e) {
         console.error(`Error writing to file "${configPath}"! Exiting!`)
         process.exit(1)
