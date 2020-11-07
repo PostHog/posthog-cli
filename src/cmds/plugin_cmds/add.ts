@@ -36,45 +36,67 @@ exports.handler = async function (argv) {
     let defaultConfig = {}
 
     if (urlRepo) {
-        const match = repository.match(/https?:\/\/(www\.|)github.com\/([^\/]+)\/([^\/]+)\/?$/)
-        if (!match) {
-            console.error('Repository must be in the format: https://github.com/user/repo')
+        const githubMatch = repository.match(/https?:\/\/(www\.|)github.com\/([^\/]+)\/([^\/]+)\/?$/)
+        const npmjsMatch = repository.match(/https?:\/\/(www\.|)npmjs.com\/package\/([^\/]+)\/?$/)
+
+        if (!githubMatch && !npmjsMatch) {
+            console.error(
+                'Repository must be in the format: https://github.com/{user}/{repo} or https://npmjs.com/package/{pkg}',
+            )
             console.error(`Received: "${repository}". Exiting!`)
             process.exit(1)
         }
-        const [, , user, repo] = match
+        if (githubMatch) {
+            const [, , user, repo] = githubMatch
 
-        if (!tag) {
-            const repoCommitsUrl = `https://api.github.com/repos/${user}/${repo}/commits`
-            const repoCommits: Record<string, any>[] | null = await fetch(repoCommitsUrl)
+            if (!tag) {
+                const repoCommitsUrl = `https://api.github.com/repos/${user}/${repo}/commits`
+                const repoCommits: Record<string, any>[] | null = await fetch(repoCommitsUrl)
+                    .then((response) => response?.json())
+                    .catch(() => null)
+
+                if (!repoCommits || repoCommits.length === 0) {
+                    console.error(`Could not find repository: ${repository}`)
+                    process.exit(1)
+                }
+
+                tag = repoCommits[0].sha
+            }
+
+            const jsonUrl = `https://raw.githubusercontent.com/${user}/${repo}/${tag}/plugin.json`
+            const json: PluginRepositoryEntry | null = await fetch(jsonUrl)
                 .then((response) => response?.json())
                 .catch(() => null)
 
-            if (!repoCommits || repoCommits.length === 0) {
-                console.error(`Could not find repository: ${repository}`)
+            if (!json) {
+                console.error(`Could not find plugin.json in repository: ${repository}`)
+                if (argv.tag) {
+                    console.error(`Looked for a tag/commit: ${argv.tag}`)
+                }
                 process.exit(1)
             }
 
-            tag = repoCommits[0].sha
-        }
-
-        const jsonUrl = `https://raw.githubusercontent.com/${user}/${repo}/${tag}/plugin.json`
-        const json: PluginRepositoryEntry | null = await fetch(jsonUrl)
-            .then((response) => response?.json())
-            .catch(() => null)
-
-        if (!json) {
-            console.error(`Could not find plugin.json in repository: ${repository}`)
-            if (argv.tag) {
-                console.error(`Looked for a tag/commit: ${argv.tag}`)
+            if (json.config) {
+                Object.entries(getConfigSchemaObject(json.config)).forEach(([key, { default: defaultValue }]) => {
+                    defaultConfig[key] = defaultValue
+                })
             }
-            process.exit(1)
-        }
+        } else if (npmjsMatch) {
+            const [, , pkg] = npmjsMatch
 
-        if (json.config) {
-            Object.entries(getConfigSchemaObject(json.config)).forEach(([key, { default: defaultValue }]) => {
-                defaultConfig[key] = defaultValue
-            })
+            if (!tag) {
+                const npmRegistryUrl = `https://registry.npmjs.org/${pkg}/latest`
+                const npmRegistry: Record<string, any> | null = await fetch(npmRegistryUrl)
+                    .then((response) => response?.json())
+                    .catch(() => null)
+
+                if (!npmRegistry || !npmRegistry['version']) {
+                    console.error(`Could not find repository: ${repository}`)
+                    process.exit(1)
+                }
+
+                tag = npmRegistry['version']
+            }
         }
     }
 
@@ -138,8 +160,10 @@ exports.handler = async function (argv) {
             console.log(`Tag: ${tag}`)
         }
         console.log('You must restart your server for the changes to take effect!')
-        console.log('To enable the plugin globally for all teams, edit posthog.json and add the following "global" key:')
-        console.log(JSON.stringify({ ...pluginConfig, global: { enabled: true, config: defaultConfig }  }, null, 2))
+        console.log(
+            'To enable the plugin globally for all teams, edit posthog.json and add the following "global" key:',
+        )
+        console.log(JSON.stringify({ ...pluginConfig, global: { enabled: true, config: defaultConfig } }, null, 2))
     } catch (e) {
         console.error(`Error writing to file "${configPath}"! Exiting!`)
         process.exit(1)
