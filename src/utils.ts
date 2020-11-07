@@ -1,6 +1,7 @@
 import * as fetch from 'node-fetch'
 import { PluginRepositoryEntry } from './types'
 import { exec } from "child_process"
+import { PluginConfigSchema } from 'posthog-plugins'
 
 export async function fetchRepositoryPlugins(): Promise<PluginRepositoryEntry[]> {
     const repoUrl = 'https://raw.githubusercontent.com/PostHog/plugins/main/repository.json'
@@ -27,4 +28,20 @@ export function execShellCommand(cmd: string) {
             }
         })
     })
+}
+
+export function getConfigSchemaObject(
+    configSchema: Record<string, PluginConfigSchema> | PluginConfigSchema[]
+): Record<string, PluginConfigSchema> {
+    if (Array.isArray(configSchema)) {
+        const newSchema: Record<string, PluginConfigSchema> = {}
+        configSchema.forEach((conf) => {
+            if (conf.key) {
+                newSchema[conf.key] = conf
+            }
+        })
+        return newSchema
+    } else {
+        return configSchema
+    }
 }

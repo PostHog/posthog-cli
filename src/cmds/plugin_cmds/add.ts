@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as fetch from 'node-fetch'
 import { PluginRepositoryEntry, PosthogConfig, Plugin } from '../../types'
-import { fetchRepositoryPlugins } from '../../utils'
+import { fetchRepositoryPlugins, getConfigSchemaObject } from '../../utils'
 
 exports.command = ['add <repository>', 'a <repository>']
 exports.desc = 'Add a plugin to posthog.json'
@@ -72,7 +72,7 @@ exports.handler = async function (argv) {
         }
 
         if (json.config) {
-            Object.entries(json.config).forEach(([key, { default: defaultValue }]) => {
+            Object.entries(getConfigSchemaObject(json.config)).forEach(([key, { default: defaultValue }]) => {
                 defaultConfig[key] = defaultValue
             })
         }
