@@ -1,4 +1,13 @@
-## PostHog Command Line Interface
+## Depreacted, DO NOT USE!
+
+This project is depreacted. It started out as a hackathon experiment to install plugins. We have since [changed course](https://github.com/PostHog/posthog/issues/1896) several times and no longer support this usecase.
+
+Still keeping the project itself and the `posthog-cli` utility around, since we might come up with other uses for a CLI in the future.
+
+Read below for the old docs.
+
+
+## PostHog Command Line Interface (Deprecated)
 
 The CLI allows you to interact with your PostHog instance from the command line.
 
